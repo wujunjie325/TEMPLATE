@@ -1,0 +1,85 @@
+struct Complex{
+    double r,i;
+    Complex (){}
+    Complex (double _r,double _i):r(_r),i(_i){}
+    void real(const double &x) {r = x;}
+    double real() const {return r;}
+    Complex operator + (const Complex &b) const {return Complex(r+b.r,i+b.i);}
+    Complex operator - (const Complex &b) const {return Complex(r-b.r,i-b.i);}
+    Complex operator * (const Complex &b) const {return Complex(r*b.r-i*b.i,r*b.i+i*b.r);}
+    Complex operator / (const double &b) const {return Complex(r/b,i/b);}
+    void operator += (const Complex &b) {r += b.r,i += b.i;}
+    void operator -= (const Complex &b) {r -= b.r,i -= b.i;}
+    void operator *= ( const Complex& rhs ) {*this = Complex (r * rhs.r - i * rhs.i, r * rhs.i + i * rhs.r);}
+    void operator /= (const double &b) {r /= b,i /= b;}
+    Complex conj() const {return Complex(r,-i);}
+};
+Complex Omege(const int &n,const int &k){
+    return Complex(cos(2*pi*k/n),sin(2*pi*k/n));
+}
+struct FFT{
+    vector<Complex> omega,inv_omega;
+    void init(const int&n){
+        omega.resize(n);
+        inv_omega.resize(n);
+        for(int i = 0;i < n;i++){
+            omega[i] = Omege(n,i);
+            inv_omega[i] = omege[i].conj();
+        }
+    }
+    void transform(Complex *a,const int &n,const vector<Complex> omega){
+        for(int i = 0,j = 0;i < n;i++){
+            if(i > j) 
+                swap(a[i],a[j]);
+                for(int l = n>>1;(j ^= l) < l;l >>= 1){}
+        }
+        for(int l = 2;l <= n;l <<= 1){
+            int m = l>>1;
+            for(Complex *p = a;p != a+n;p += l){
+                for(int i = 0;i < m;i++){
+                    Complex t = omega[n/l*i]*p[m+i];
+                    p[m+i] = p[i]-t;
+                    p[i] += t;
+                }
+            }
+        }
+    }
+    void dft(Complex *a,const int &n){
+        transform(a,n,omega);
+    }
+    void idft(Complex *a,const int &n){
+        transform(a,n,inv_omega);
+        for(int i = 0;i < n;i++){
+            a[i] /= n;
+        }
+    }
+} fft;
+/*
+cin>>n>>m;
+    for(int i = 0;i <= n;i++){
+        cin>>f[i];
+    }
+    for(int i = 0;i <= m;i++){
+        cin>>g[i];
+    }
+    int k = 1;
+    while(k <= n+m) k <<= 1;//扩展为2的幂
+    fft.init(k);
+    static Complex a[maxn],b[maxn];
+    for(int i = 0;i <= n;i++){
+        a[i].real(f[i]);
+    }
+    for(int i = 0;i <= m;i++){
+        b[i].real(g[i]);
+    }
+    fft.dft(a,k);
+    fft.dft(b,k);//转换为点值表示
+    for(int i = 0;i <= k;i++){
+        a[i] *= b[i];
+    }
+    fft.idft(a,k);//转换为系数表示
+    for(int i = 0;i <= n+m;i++){
+        cout<<(int)(a[i].real()+0.5)<<" ";
+    }
+    cout<<endl;
+*/

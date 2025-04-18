@@ -1,0 +1,37 @@
+vector<int> e[maxn],g[maxn];
+int dfn[maxn],low[maxn],id[maxn],sz[maxn],cnt_scc,timestamp;
+stack<int> sta;
+bool in_sta[maxn];
+void tarjan(int u){
+	dfn[u] = low[u] = ++timestamp;
+	sta.push(u);in_sta[u] = 1;
+	for(int v : e[u]){
+		if(!dfn[v]){
+			tarjan(v);
+			low[u] = min(low[u],low[v]);
+		}else if(in_sta[v]){
+			low[u] = min(low[u],dfn[v]);
+		}
+	}
+	if(dfn[u] == low[u]){
+		int y;
+		cnt_scc++;
+		do{
+			y = sta.top();sta.pop();in_sta[y] = 0;
+			id[y] = cnt_scc;
+            sz[cnt_scc]++;
+		}while(y != u);
+	}
+}
+int din[maxn];
+void build(){
+    for(int u = 1;u <= n;u++){
+        for(int v : e[u]){
+            int x = id[u],y = id[v];
+            if(x != y){
+                g[x].push_back(y);
+                din[y]++;
+            }
+        }
+    }
+}

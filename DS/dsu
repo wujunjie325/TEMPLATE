@@ -1,0 +1,26 @@
+struct DSU{
+    int N;
+    vector<int> fa;
+    void init(int n){
+        N = n+10;
+        fa.clear();
+        fa.shrink_to_fit();
+        fa.resize(N);
+        for(int i = 1;i <= n;i++){
+            fa[i] = i;
+        }
+    }
+    dsu(int n){
+        init(n);
+    }
+    int find(int u){
+        if(fa[u] == u)
+            return fa[u];
+        return fa[u] = find(fa[u]);
+    }
+    void merge(int u,int v){
+        if(find(u) != find(v)){
+            fa[find(u)] = find(v);
+        }
+    }
+};

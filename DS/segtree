@@ -1,0 +1,231 @@
+struct Info {
+    int L, R;
+    long long val;
+    void init(int tL, int tR, long long v) { // build 内初始化
+        L = tL;
+        R = tR;
+        val = v;
+    }
+    friend Info operator+(const Info &lhs, const Info &rhs) { // pushup
+        Info res;
+        res.L = lhs.L;
+        res.R = rhs.R;
+        res.val = (lhs.val + rhs.val);
+        return res;
+    }
+};
+struct Lazy {
+    int tag;
+    Lazy() { // 懒标记归零
+        tag = 0;
+    }
+    Lazy(int x){
+        tag = x;
+    }
+    void work(Info &info, Lazy &lazy) { // pushdown
+        lazy.tag += tag;
+        info.val += tag*(info.R - info.L+1);
+    }
+};
+struct SegmentTree {
+    int N = 0;
+    vector<Info> tr;
+    vector<Lazy> lazy;
+    SegmentTree(int n) {
+        init(n);
+    }
+    void clear() {
+        N = 0;
+        tr.resize(0);
+        lazy.resize(0);
+    }
+    void init(int n) {
+        N = n;
+        n <<= 2;
+        tr.resize(n);
+        lazy.resize(n);
+    }
+    void build(int a[]) {
+        build(1, N, a);
+    }
+    void build(int L, int R, int a[],int p = 1) {
+        if (L == R) {
+            tr[p].init(L, R, a[L]);
+            return;
+        }
+        int mid = L + R >> 1;
+        build(L, mid, a, p << 1);
+        build(mid + 1, R, a, p << 1 | 1);
+        tr[p] = tr[p << 1] + tr[p << 1 | 1];
+    }
+    void pushdown(int p) {
+        lazy[p].work(tr[p << 1], lazy[p << 1]);
+        lazy[p].work(tr[p << 1 | 1], lazy[p << 1 | 1]);
+        lazy[p] = Lazy();
+    }
+    void modify(int QL, int QR, Lazy la, int p = 1) {
+        if (QL <= tr[p].L && tr[p].R <= QR) {
+            la.work(tr[p], lazy[p]);
+            return;
+        }
+        int mid = tr[p].L + tr[p].R >> 1;
+        pushdown(p);
+        if (QL <= mid) modify(QL, QR, la, p << 1);
+        if (QR >= mid + 1) modify(QL, QR, la, p << 1 | 1);
+        tr[p] = tr[p << 1] + tr[p << 1 | 1];
+    }
+    Info query(int QL, int QR, int p = 1) {
+        if (QL <= tr[p].L && tr[p].R <= QR) {
+            return tr[p];
+        }
+        int mid = tr[p].L + tr[p].R >> 1;
+        pushdown(p);
+        if (QR <= mid) return query(QL, QR, p << 1);
+        else if (QL >= mid + 1) return query(QL, QR, p << 1 | 1);
+        return  query(QL, QR, p << 1) + query(QL, QR, p << 1 | 1);
+    }
+};
+
+
+struct SegmentTree{
+    #define lc(x) ((x)<<1)
+    #define rc(x) ((x)<<1|1)
+    struct Node{
+        int l,r;
+        int val,tag;
+    };
+    vector<Node> tr;
+    void init(int n){
+        tr.clear();
+        tr.shrink_to_fit();
+        tr.resize(4*n+10);
+    }
+    Node pushup(Node a,Node b){
+        Node res = {0};
+        res.val = a.val + b.val;
+        return res;
+    }
+    void pushup(int u){
+        tr[u].val = tr[lc(u)].val + tr[rc(u)].val;
+    }
+    void pushdown(Node &rt,int tag){
+        rt.val += (rt.r-rt.l+1)*tag;
+        rt.tag += tag;
+    }
+    void pushdown(int u){
+        if(!tr[u].tag) return ;
+        pushdown(tr[lc(u)],tr[u].tag);
+        pushdown(tr[rc(u)],tr[u].tag);
+        tr[u].tag = 0;
+    }
+    void build(int u,int l,int r,int a[]){
+        tr[u] = {l,r};
+        if(l == r){
+            tr[u].val = a[l];
+        }else{
+            int mid = (l+r)>>1;
+            build(lc(u),l,mid,a);
+            build(rc(u),mid+1,r,a);
+            pushup(u);
+        }
+    }
+    void modify(int u,int l,int r,int d){
+        if(l <= tr[u].l && tr[u].r <= r){
+            pushdown(tr[u],d);
+        }else{
+            pushdown(u);
+            int mid = (tr[u].l+tr[u].r)>>1;
+            if(l <= mid) modify(lc(u),l,r,d);
+            if(r > mid) modify(rc(u),l,r,d);
+            pushup(u);
+        }
+    }
+    Node query(int u,int l,int r){
+        if(l <= tr[u].l && tr[u].r <= r){
+            return tr[u];
+        }else{
+            pushdown(u);
+            int mid = (tr[u].l+tr[u].r)>>1;
+            if(l > mid) return query(rc(u),l,r);
+            else if(r <= mid) return query(lc(u),l,r);
+            return pushup(query(lc(u),l,r),query(rc(u),l,r));
+        }
+    }
+    #undef lc
+    #undef rc
+};
+//动态开点
+struct Segtree{
+    #define lc(x) (tr[x].ls)
+    #define rc(x) (tr[x].rs)
+    struct Node{
+        int l = 0,r = 0;
+        int ls = 0,rs = 0;
+        int val = 0,tag = 0;
+        Node(int x,int y,int v){
+            l = x,r = y,val = v;
+        }
+        Node(){
+
+        }
+    };
+    vector<Node> tr;
+    void init(int l,int r){//请务必init()
+        tr.clear();
+        tr.shrink_to_fit();
+        tr.push_back({0,0,0});
+        tr.push_back({l,r,0});
+    }
+    Node pushup(Node a,Node b){
+        Node res = {};
+        res.val = a.val + b.val;
+        return res;
+    }
+    void pushup(int u){
+        tr[u].val = tr[lc(u)].val + tr[rc(u)].val;
+    }
+    void pushdown(Node &rt,int tag){
+        rt.val += (rt.r-rt.l+1)*tag;
+        rt.tag += tag;
+    }
+    void pushdown(int u){
+        int mid = (tr[u].l+tr[u].r)/2;
+        if(!lc(u)){
+            lc(u) = tr.size();
+            tr.push_back({tr[u].l,mid,0});
+        }
+        if(!rc(u)){
+            rc(u) = tr.size();
+            tr.push_back({mid+1,tr[u].r,0});
+        }
+        if(!tr[u].tag) return ;
+        pushdown(tr[lc(u)],tr[u].tag);
+        pushdown(tr[rc(u)],tr[u].tag);
+        tr[u].tag = 0;
+    }
+    void modify(int u,int l,int r,int d){
+        //cout<<u<<" "<<tr[u].l<<" "<<tr[u].r<<" "<<tr[u].ls<<" "<<tr[u].rs<<endl;
+        if(l <= tr[u].l && tr[u].r <= r){
+            pushdown(tr[u],d);
+        }else{
+            pushdown(u);
+            int mid = (tr[u].l+tr[u].r)>>1;
+            if(l <= mid) modify(lc(u),l,r,d);
+            if(r > mid) modify(rc(u),l,r,d);
+            pushup(u);
+        }
+    }
+    Node query(int u,int l,int r){
+        if(l <= tr[u].l && tr[u].r <= r){
+            return tr[u];
+        }else{
+            pushdown(u);
+            int mid = (tr[u].l+tr[u].r)>>1;
+            if(l > mid) return query(rc(u),l,r);
+            else if(r <= mid) return query(lc(u),l,r);
+            return pushup(query(lc(u),l,r),query(rc(u),l,r));
+        }
+    }
+    #undef lc
+    #undef rc
+};
