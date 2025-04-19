@@ -82,11 +82,11 @@ struct FWT{
             }
         }
     }
-    std::vector<mint> Or(std::vector<mint> a1, std::vector<mint> a2) {
-        int n = std::max(a1.size(), a2.size()), N = extend(n);
+    vector<mint> Or(vector<mint> a1,vector<mint> a2) {
+        int n = max(a1.size(), a2.size()), N = extend(n);
         a1.resize(N), FWTor(a1, false);
         a2.resize(N), FWTor(a2, false);
-        std::vector<mint> A(N);
+        vector<mint> A(N);
         for (int i = 0; i < N; i++) A[i] = a1[i] * a2[i];
         FWTor(A, true);
         return A;
