@@ -1,1 +1,33 @@
-1
+struct Tire{
+    struct node{
+        int son[2] = {0};
+    };
+    vector<node> tree;
+    Tire(){
+        tree.push_back({});
+    }
+    void insert(int x){
+        int cur = 0;
+        for(int i = 60;i >= 0;i--){
+            int t = (x >> i) & 1;
+            if(tree[cur].son[t] == 0){
+                tree[cur].son[t] = tree.size();
+                tree.push_back({});
+            }
+            cur = tree[cur].son[t];
+        }
+    }
+    int query(int x){
+        int cur = 0,res = 0;
+        for(int i = 60;i >= 0;i--){
+            int t = (x >> i) & 1;
+            if(tree[cur].son[t^1]){
+                res += (1ll<<i);
+                cur = tree[cur].son[t^1];
+            }else{
+                cur = tree[cur].son[t];
+            }
+        }
+        return res;
+    }
+};
