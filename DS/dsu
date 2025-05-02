@@ -10,7 +10,7 @@ struct DSU{
             fa[i] = i;
         }
     }
-    dsu(int n){
+    DSU(int n){
         init(n);
     }
     int find(int u){
