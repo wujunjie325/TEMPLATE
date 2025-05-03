@@ -1,61 +1,48 @@
 struct Segtree{
     #define lc(x) (tr[x].ls)
     #define rc(x) (tr[x].rs)
+    int idx = 0,L,R;
+    vector<int> root;
     struct node{
         int ls,rs;
         int val;
-    };
-    vector<node> tr;
-    vector<int> root;
-    int L = 1,R = -1;
-    void init(int l,int r){//务必 init
+    }tr[maxn*32];
+    void init(int l,int r){
         L = l,R = r;
-        tr.clear();
-        tr.shrink_to_fit();
-        tr.push_back({0,0,0});
+        idx = 0;
         root.clear();
-        build(l,r);
         root.push_back(build(l,r));
     }
     int build(int l,int r){
-        int p = tr.size();
-        int mid = (l+r)/2;
-        tr.push_back({0,0,0});
-        if(l == r)
-            return p;
-        tr[p].ls = build(l,mid);
-        tr[p].rs = build(mid+1,r);
+        int p = ++idx;
+        if(l == r) return p;
+        int mid = (l+r) >> 1;
+        tr[p].ls = build(l,mid),tr[p].rs = build(mid+1,r);
         return p;
     }
-    void pushup(int u){
-        tr[u].val = tr[lc(u)].val + tr[rc(u)].val;
+    
+    int insert(int p,int l,int r,int x){
+        int q = ++idx;
+        tr[q] = tr[p];
+        if(l == r){
+            tr[q].val++;
+            return q; 
+        }
+        int mid = (l+r) >> 1;
+        if(x <= mid) tr[q].ls = insert(tr[p].ls,l,mid,x);
+        else tr[q].rs = insert(tr[p].rs,mid+1,r,x);
+        tr[q].val = tr[lc(q)].val + tr[rc(q)].val;
+        return q;
     }
     void insert(int x){
         root.push_back(insert(root.back(),L,R,x));
     }
-    int insert(int p,int l,int r,int x){
-        tr.push_back({0,0,0});
-        int q = tr.size() - 1;
-        tr[q] = tr[p];
-        if(l == r){
-            tr[q].val++;
-            return q;
-        }
-        int mid = (l+r)/2;
-        if(x <= mid){
-            tr[q].ls = insert(lc(p),l,mid,x);
-        }else{
-            tr[q].rs = insert(rc(p),mid+1,r,x);
-        }
-        pushup(q);
-        return q;
-    }
-    int query(int p,int q,int l,int r,int k){//区间第k小值
-        if(l == r) return l;
-        int cnt = tr[lc(q)].val - tr[lc(p)].val;
+    int query(int p,int q,int l,int r,int k){
+        if(l == r) return l; 
+        int val = tr[lc(q)].val - tr[lc(p)].val;
         int mid = (l+r)>>1;
-        if(cnt >= k) return query(lc(p),lc(q),l,mid,k);
-        else return query(rc(p),rc(q),mid+1,r,k-cnt);
+        if(val >= k) return query(lc(p),lc(q),l,mid,k);
+        else return query(rc(p),rc(q),mid+1,r,k-val);
     }
     int query(int l,int r,int k){
         return query(root[l-1],root[r],L,R,k);

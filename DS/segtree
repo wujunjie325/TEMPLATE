@@ -204,7 +204,6 @@ struct Segtree{
         tr[u].tag = 0;
     }
     void modify(int u,int l,int r,int d){
-        //cout<<u<<" "<<tr[u].l<<" "<<tr[u].r<<" "<<tr[u].ls<<" "<<tr[u].rs<<endl;
         if(l <= tr[u].l && tr[u].r <= r){
             pushdown(tr[u],d);
         }else{
