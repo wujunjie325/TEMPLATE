@@ -1,0 +1,9 @@
+ll calc(ll k,ll n){//计算[1,n]范围内 k/i 的和
+    ll res = 0;
+    for(ll l = 1,r;l <= n;l = r+1){
+        if(k/l == 0) r = n;
+        else r = min(n,k/(k/l));//计算这一段的r
+        res += (k/l)*(r-l+1);//计算每一段的和
+    }
+    return res;
+}

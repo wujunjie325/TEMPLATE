@@ -3,8 +3,7 @@ unsigned int down(unsigned int x){
     return x >= mod ? x - mod : x;
 }
 template <int mod>
-struct Modint
-{
+struct Modint{
     unsigned int x;
     Modint() = default;
     Modint(unsigned int x) : x(x) {}

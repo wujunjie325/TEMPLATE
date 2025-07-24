@@ -1,0 +1,30 @@
+vector<int> prime;
+bool isprime[maxn];
+void init(int n){
+    isprime[1] = 1;
+    for(int i = 2;i <= n;i++){
+        if(!isprime[i])
+            prime.push_back(i);
+        for(int j = 0;prime[j] * i <= n;j++){
+            isprime[prime[j] * i] = 1;//每个数字都被最小的质因数筛掉
+            if(i % prime[j] == 0)
+                break;
+        }
+    }
+}
+
+//预处理每个数的不同的质因数个数
+void init(int n){
+	isprime[1] = 1;
+	for(int i = 2;i <= n;i++){
+		if(!isprime[i]) prime[cnt++] = i,f[i] = 1;
+		for(int j = 0;prime[j]*i <= n;j++){
+			isprime[prime[j]*i] = 1;
+			if(i % prime[j] == 0){
+				f[prime[j]*i] = f[i];
+				break;
+			}
+			f[prime[j]*i] = f[i]+1;
+		}
+	}
+}
