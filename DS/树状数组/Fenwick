@@ -2,7 +2,7 @@ struct Bit{
     int N;
     vector<int> tr;
     int lowbit(int x){
-        return x&(-x);
+        return x & (-x);
     }
     Bit(int n){
         N = n;
