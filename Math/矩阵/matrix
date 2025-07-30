@@ -1,0 +1,43 @@
+struct Matrix{
+    int a[101][101];
+    Matrix(){// 默认单位阵
+        memset(a,0,sizeof(a));
+        for(int i = 1;i <= n;i++){
+            a[i][i] = 1;
+        }
+    }
+    void init(){// 0矩阵
+        memset(a,0,sizeof(a));
+    }
+    friend Matrix operator * (Matrix x, Matrix y) {
+		Matrix res;
+        res.init();
+		for(int i = 1;i <= n;i++){
+            for(int j = 1;j <= n;j++){
+                for(int k = 1;k <= n;k++){
+                    res.a[i][j] = (res.a[i][j] + x.a[i][k] * y.a[k][j]) % mod;
+                }    
+            }
+        }
+		return res;
+	}
+    friend Matrix operator ^ (Matrix x,ll k){
+        Matrix res;
+        while(k){
+            if(k & 1){
+                res = res * x;
+            }
+            x = x * x;
+            k >>= 1;
+        }
+        return res;
+    }
+    void print(){
+        for(int i = 1;i <= n;i++){
+            for(int j = 1;j <= n;j++){
+                cout<<a[i][j]<<" ";
+            }
+            cout<<endl;
+        }
+    }
+};
