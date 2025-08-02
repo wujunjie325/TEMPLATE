@@ -9,7 +9,7 @@ struct Matrix{
     void init(){// 0矩阵
         memset(a,0,sizeof(a));
     }
-    friend Matrix operator * (Matrix x, Matrix y) {
+    friend Matrix operator * (Matrix x, Matrix y){ //常规矩阵乘法为 +* 可以替换为满足结合律的广义矩阵乘法 如 min+
 		Matrix res;
         res.init();
 		for(int i = 1;i <= n;i++){
