@@ -1,0 +1,23 @@
+void add(int l,int r,int a,int b){ // 区间加等差数列
+    if(l > r)
+        return ;
+    int len = r - l + 1;
+    d[l] += a;
+    d[r + 1] -= a;
+    dd[l + 1] += b;
+    dd[r + 1] -= len * b;
+    dd[r + 2] += (len - 1) * b;
+}
+void print(){
+    for(int i = 1;i <= n;i++){
+        dd[i] += dd[i - 1];
+    }
+    for(int i = 1;i <= n;i++){
+        dd[i] += dd[i - 1];
+        d[i] += d[i - 1];
+        ans[i] = dd[i] + d[i];
+    }
+    for(int i = 1;i <= n;i++){
+        cout<<ans[i]<<endl;
+    }
+}

@@ -1,0 +1,35 @@
+bool spfa(){
+    queue<int> q;
+    q.push(S);
+    memset(dis,0x3f,sizeof(dis));
+    memset(d,0,sizeof(d));
+    dis[S] = 0;
+    d[S] = inf64;
+    while(q.size()){
+        int u = q.front();
+        q.pop();
+        vis[u] = 0; 
+        for(int i = head[u];i != -1;i = e[i].next){
+            int v = e[i].v,w = e[i].w,c = e[i].c;
+            if(w > 0 && dis[v] > c + dis[u]){
+                pre[v] = i;
+                dis[v] = dis[u] + c;
+                d[v] = min(d[u],w);
+                q.push(v);
+                vis[v] = 1;
+            }
+        }
+    }
+    return d[T] != 0;
+}
+void MCMF(int &flow,int &cost){
+    flow = cost = 0;
+    while(spfa()){
+        int k = d[T];
+        flow += k,cost += dis[T] * k;
+        for(int i = T;i != S;i = e[pre[i]^1].v){
+            e[pre[i]].w -= k;
+            e[pre[i] ^ 1].w += k;
+        }
+    }
+}
