@@ -1,0 +1,108 @@
+#include<bits/stdc++.h>
+#define endl "\n"
+//#pragma GCC optimize(2)
+//#define double long double
+//#define int long long
+#define pii pair<int,int>
+#define pll pair<long long,long long>
+#define fi first
+#define sc second
+#define __int128_t int128
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+const int inf32 = 0x3f3f3f3f;
+const ll inf64 = 0x3f3f3f3f3f3f3f3f;
+const double pi = acos(-1),eps = 1e-10;
+mt19937 rnd(chrono::system_clock::now().time_since_epoch().count());
+const int maxn = 2*1e5+10,maxm = 1*1e7+10,mod = 1e9+7;
+struct Bit{
+    int N;
+    vector<int> tr;
+    int lowbit(int x){
+        return x & (-x);
+    }
+    Bit(int n){
+        N = n;
+        tr.clear();
+        tr.shrink_to_fit();
+        tr.resize(n+10);
+    }
+    void modify(int x,int k){
+        while(x <= N){
+            tr[x] += k;
+            x += lowbit(x);
+        }
+    }
+    int query(int x){//查询前缀和
+        int res = 0;
+        while(x >= 1){
+            res += tr[x];
+            x -= lowbit(x);
+        }
+        return res;
+    }
+    int query(int l,int r){
+        if(l > r)
+            return 0;
+        return query(r)-query(l-1);
+    }
+}tr(maxn);
+int n,m,ans[maxn];
+pii a[maxn];
+bool cmp(pii a,pii b){
+    return a.sc < b.sc;
+}
+struct que{
+    int l,r,k;
+}q[maxn];
+void solve(int vl,int vr,vector<int> qset){//二分答案，根据答案对query进行分组
+    if(!qset.size())
+        return ;
+    if(vl == vr){
+        for(auto it : qset){
+            ans[it] = a[vl].sc;
+        }
+        return ;
+    }
+    int mid = (vl + vr) / 2;
+    for(int i = vl;i <= mid;i++){
+        tr.modify(a[i].fi,1);
+    }
+    vector<int> lset,rset;
+    for(auto it : qset){
+        int val = tr.query(q[it].l,q[it].r);
+        if(val < q[it].k){
+            q[it].k -= val;
+            rset.push_back(it);
+        }else{
+            lset.push_back(it);
+        }
+    }
+    for(int i = vl;i <= mid;i++){
+        tr.modify(a[i].fi,-1);
+    }
+    solve(vl,mid,lset);
+    solve(mid + 1,vr,rset);
+}
+signed main(){
+	ios::sync_with_stdio(false);cin.tie(0);cout.tie(0);
+    //freopen("in.in","r",stdin);
+    //freopen("out.out","w",stdout);
+    cin>>n>>m;
+    for(int i = 1;i <= n;i++){
+        cin>>a[i].sc;
+        a[i].fi = i;
+    }
+    sort(a+1,a+1+n,cmp);
+    vector<int> t(m);
+    for(int i = 1;i <= m;i++){
+        cin>>q[i].l>>q[i].r>>q[i].k;
+        t[i - 1] = i;
+    }
+    solve(1,n,t);
+    for(int i = 1;i <= m;i++){
+        cout<<ans[i]<<endl;
+    }
+    return 0;
+} 

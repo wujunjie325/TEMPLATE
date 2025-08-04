@@ -1,0 +1,60 @@
+struct HLD{
+    void dfs1(int u,int father,int depth){
+        fa[u] = father,sz[u] = 1,dep[u] = depth;
+        for(int v : e[u]){
+            if(v == father)
+                continue;
+            dfs1(v,u,depth + 1);
+            sz[u] += sz[v];
+            if(sz[v] > sz[son[u]]){
+                son[u] = v;
+            }
+        }
+    }
+    void dfs2(int u,int t){
+        in[u] = ++timestamp,tou[u] = t,dfn[u] = timestamp;
+        if(!son[u])
+            return ;
+        dfs2(son[u],t);
+        for(int v : e[u]){
+            if(v == fa[u] || v == son[u]) 
+                continue;
+            dfs2(v,v);
+        }
+    }
+    void use(int rt){
+        dfs1(rt,0,1);
+        dfs2(rt,rt);
+    }
+    int lca(int u,int v){
+        while(top[u] != top[v]){
+        if(dep[top[u]] < dep[top[v]]) swap(u,v);
+            u = fa[top[u]];
+        }
+        if(dep[u] < dep[v]) 
+            return u;
+        return v;
+    }
+    void modify_path(int u,int v){
+        while(top[u] != top[v]){
+            if(dep[top[u]] < dep[top[v]]) swap(u,v);
+            //修改区间 [in[top[u]],in[u]]
+            u = fa[top[u]];
+        }
+        if(dep[u] < dep[v]) swap(u,v);
+        //修改区间 [in[v],in[u]]
+    }
+    int query_path(int u,int v){
+        int res = 0;
+        while(top[u] != top[v]){
+            if(dep[top[u]] < dep[top[v]]) swap(u,v);
+            //询问区间 [in[top[u]],in[u]]
+            res += segtree::query(1,in[top[u]],in[u]).val;
+            u = fa[top[u]];
+        }
+        if(dep[u] < dep[v]) 
+            swap(u,v);
+            //询问区间 [in[v],in[u]]
+        return res;
+    }
+};

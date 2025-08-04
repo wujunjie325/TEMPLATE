@@ -1,5 +1,5 @@
 ll get_hash(string s){
-    const int mod1 = 998244353,mod2 = 1004535809 ,base = 233;
+    const int mod1 = 998244353,mod2 = 1004535809,base = 233;
     ll res = 0;
     int h1 = 0,h2 = 0;
     for(auto it : s){
