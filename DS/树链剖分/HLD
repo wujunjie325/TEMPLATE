@@ -1,3 +1,4 @@
+int timestamp,fa[maxn],dep[maxn],sz[maxn],son[maxn],in[maxn],out[maxn],top[maxn],dfn[maxn];
 struct HLD{
     void dfs1(int u,int father,int depth){
         fa[u] = father,sz[u] = 1,dep[u] = depth;
@@ -12,7 +13,7 @@ struct HLD{
         }
     }
     void dfs2(int u,int t){
-        in[u] = ++timestamp,tou[u] = t,dfn[u] = timestamp;
+        in[u] = ++timestamp,top[u] = t,dfn[u] = timestamp;
         if(!son[u])
             return ;
         dfs2(son[u],t);
@@ -49,7 +50,6 @@ struct HLD{
         while(top[u] != top[v]){
             if(dep[top[u]] < dep[top[v]]) swap(u,v);
             //询问区间 [in[top[u]],in[u]]
-            res += segtree::query(1,in[top[u]],in[u]).val;
             u = fa[top[u]];
         }
         if(dep[u] < dep[v]) 
