@@ -1,3 +1,4 @@
+constexpr int MOD = 998244353;
 template <int mod>
 unsigned int down(unsigned int x){
     return x >= mod ? x - mod : x;
@@ -5,19 +6,22 @@ unsigned int down(unsigned int x){
 template <int mod>
 struct Modint{
     unsigned int x;
-    Modint() = default;
-    Modint(unsigned int x) : x(x) {}
-    friend istream &operator>>(istream &in, Modint &a) { return in >> a.x; }
-    friend ostream &operator<<(ostream &out, Modint a) { return out << a.x; }
+    Modint() : x(0) {}
+    Modint(long long val) : x((val % mod + mod) % mod) {}
+
+    static constexpr int get_mod() { return mod; }
+
+    friend std::istream &operator>>(std::istream &in, Modint &a) { return in >> a.x; }
+    friend std::ostream &operator<<(std::ostream &out, Modint a) { return out << a.x; }
     friend Modint operator+(Modint a, Modint b) { return down<mod>(a.x + b.x); }
     friend Modint operator-(Modint a, Modint b) { return down<mod>(a.x - b.x + mod); }
     friend Modint operator*(Modint a, Modint b) { return 1ULL * a.x * b.x % mod; }
     friend Modint operator/(Modint a, Modint b) { return a * ~b; }
-    friend Modint operator^(Modint a, int b){
+    friend Modint operator^(Modint a, long long k){
         Modint ans = 1;
-        for (; b; b >>= 1, a *= a)
-            if (b & 1)
-                ans *= a;       
+        for (; k; k >>= 1, a *= a)
+            if (k & 1)
+                ans *= a;
         return ans;
     }
     friend Modint operator~(Modint a) { return a ^ (mod - 2); }
@@ -26,180 +30,269 @@ struct Modint{
     friend Modint &operator-=(Modint &a, Modint b) { return a = a - b; }
     friend Modint &operator*=(Modint &a, Modint b) { return a = a * b; }
     friend Modint &operator/=(Modint &a, Modint b) { return a = a / b; }
-    friend Modint &operator^=(Modint &a, int b) { return a = a ^ b; }
-    friend Modint &operator++(Modint &a) { return a += 1; }
-    friend Modint operator++(Modint &a, int){
-        Modint x = a;
-        a += 1;
-        return x;
-    }
-    friend Modint &operator--(Modint &a) { return a -= 1; }
-    friend Modint operator--(Modint &a, int){
-        Modint x = a;
-        a -= 1;
-        return x;
-    }
     friend bool operator==(Modint a, Modint b) { return a.x == b.x; }
     friend bool operator!=(Modint a, Modint b) { return !(a == b); }
 };
-typedef Modint<998244353> mint;
+using mint = Modint<MOD>;
+//============================================================================
+// Part 2: Number Theoretic Transform (NTT)
+// Hardcoded for MOD = 998244353, G = 3
+//============================================================================
+namespace NTT {
+    const mint G = 3;
+    void transform(std::vector<mint>& a, bool inverse) {
+        int n = a.size();
+        std::vector<int> rev(n);
+        for (int i = 0; i < n; i++) {
+            rev[i] = (rev[i >> 1] >> 1) | ((i & 1) ? (n >> 1) : 0);
+            if (i < rev[i]) std::swap(a[i], a[rev[i]]);
+        }
 
-using Poly = vector<mint>;
-
-// 保留前 n 项
-void shrink(Poly &f, int n) {
-    if ((int)f.size() > n) f.resize(n);
-}
-
-// 计算 NTT 的原根
-int get_primitive_root() {
-    int g = 2;
-    while (true) {
-        bool ok = true;
-        int m = mod - 1;
-        for (int i = 2; i * i <= m; ++i) {
-            if (m % i == 0) {
-                if (mint(g).pow((mod - 1) / i).x == 1) {
-                    ok = false;
-                    break;
+        for (int len = 2; len <= n; len <<= 1) {
+            mint w_len = G ^ ((MOD - 1) / len);
+            if (inverse) w_len = ~w_len;
+            for (int i = 0; i < n; i += len) {
+                mint w = 1;
+                for (int j = 0; j < len / 2; j++) {
+                    mint u = a[i + j];
+                    mint v = a[i + j + len / 2] * w;
+                    a[i + j] = u + v;
+                    a[i + j + len / 2] = u - v;
+                    w *= w_len;
                 }
-                while (m % i == 0) m /= i;
             }
         }
-        if (m > 1 && mint(g).pow((mod - 1) / m).x == 1) ok = false;
-        if (ok) return g;
-        ++g;
-    }
-}
-
-// NTT 操作
-void ntt(vector<mint> &a, bool invert) {
-    int n = a.size();
-    static vector<int> rev;
-    static mint root = mint(get_primitive_root()).pow((mod - 1) / (1 << 20));
-    static mint inv_root = root.inv();
-
-    if ((int)rev.size() != n) {
-        rev.resize(n);
-        int lg = __builtin_ctz(n);
-        for (int i = 0; i < n; ++i) {
-            rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (lg - 1));
+        if (inverse) {
+            mint inv_n = ~mint(n);
+            for (mint& x : a) x *= inv_n;
         }
     }
+} // namespace NTT
 
-    for (int i = 0; i < n; ++i)
-        if (i < rev[i]) swap(a[i], a[rev[i]]);
 
-    for (int len = 2; len <= n; len <<= 1) {
-        mint wlen = invert ? inv_root : root;
-        for (int i = len; i < (1 << 20); i <<= 1)
-            wlen *= wlen;
-        for (int i = 0; i < n; i += len) {
-            mint w = 1;
-            for (int j = 0; j < len / 2; ++j) {
-                mint u = a[i + j], v = a[i + j + len / 2] * w;
-                a[i + j] = u + v;
-                a[i + j + len / 2] = u - v;
-                w *= wlen;
-            }
+//============================================================================
+// Part 3: Poly Class
+//============================================================================
+struct Poly {
+    std::vector<mint> coefs;
+
+    // Constructors
+    Poly() = default;
+    Poly(const std::vector<mint>& v) : coefs(v) {}
+    Poly(std::initializer_list<mint> il) : coefs(il) {}
+    explicit Poly(int size) : coefs(size) {}
+
+    // Utility
+    int degree() const { return coefs.empty() ? -1 : coefs.size() - 1; }
+    int size() const { return coefs.size(); }
+    void resize(int n) { coefs.resize(n); }
+    void shrink_to_fit() {
+        while (size() > 1 && coefs.back() == mint(0)) {
+            coefs.pop_back();
         }
     }
+    
+    mint at(int i) const { return i < size() ? coefs[i] : mint(0); }
+    mint& operator[](int i) { return coefs[i]; }
+    const mint& operator[](int i) const { return coefs[i]; }
 
-    if (invert) {
-        mint inv_n = mint(n).inv();
-        for (mint &x : a) x *= inv_n;
+    // Derivative and Integral
+    Poly derivative() const {
+        if (coefs.empty()) return Poly();
+        Poly res(std::max(0, size() - 1));
+        for (int i = 1; i < size(); i++) {
+            res[i - 1] = coefs[i] * i;
+        }
+        return res;
     }
-}
 
-// 多项式乘法（基于 NTT）
-Poly operator*(const Poly &a, const Poly &b) {
-    int n = 1;
-    while (n < (int)a.size() + (int)b.size() - 1) n <<= 1;
-    vector<mint> A(n), B(n);
-    for (int i = 0; i < (int)a.size(); ++i) A[i] = a[i];
-    for (int i = 0; i < (int)b.size(); ++i) B[i] = b[i];
-    ntt(A, false);
-    ntt(B, false);
-    for (int i = 0; i < n; ++i) A[i] *= B[i];
-    ntt(A, true);
-    A.resize(a.size() + b.size() - 1);
-    return A;
-}
-
-// 多项式加法
-Poly operator+(const Poly &a, const Poly &b) {
-    Poly res(max(a.size(), b.size()));
-    for (int i = 0; i < (int)a.size(); ++i) res[i] += a[i];
-    for (int i = 0; i < (int)b.size(); ++i) res[i] += b[i];
-    return res;
-}
-
-// 多项式减法
-Poly operator-(const Poly &a, const Poly &b) {
-    Poly res(max(a.size(), b.size()));
-    for (int i = 0; i < (int)a.size(); ++i) res[i] += a[i];
-    for (int i = 0; i < (int)b.size(); ++i) res[i] -= b[i];
-    return res;
-}
-
-// 多项式乘常数
-Poly operator*(const Poly &a, mint b) {
-    Poly res = a;
-    for (auto &x : res) x *= b;
-    return res;
-}
-
-// 多项式导数
-Poly deriv(const Poly &f) {
-    Poly res(f.size() - 1);
-    for (int i = 1; i < (int)f.size(); ++i)
-        res[i - 1] = f[i] * i;
-    return res;
-}
-
-// 多项式积分
-Poly integ(const Poly &f) {
-    Poly res(f.size() + 1);
-    for (int i = 0; i < (int)f.size(); ++i)
-        res[i + 1] = f[i] / mint(i + 1);
-    return res;
-}
-
-// 多项式逆元
-Poly inv(const Poly &f, int n) {
-    Poly g(1, f[0].inv());
-    for (int m = 1; m < n; m <<= 1) {
-        Poly f_cut(f.begin(), f.begin() + min((int)f.size(), 2 * m));
-        Poly t = g * g * f_cut;
-        shrink(t, 2 * m);
-        for (int i = 0; i < 2 * m; ++i) t[i] = -t[i];
-        for (int i = 0; i < m; ++i) t[i] += mint(2) * g[i];
-        g = t;
-        shrink(g, 2 * m);
+    Poly integral() const {
+        Poly res(size() + 1);
+        for (int i = 0; i < size(); i++) {
+            res[i + 1] = coefs[i] / (i + 1);
+        }
+        return res;
     }
-    shrink(g, n);
-    return g;
-}
 
-// 多项式 ln(f), 要求 f[0] = 1
-Poly ln(const Poly &f, int n) {
-    Poly res = integ(deriv(f) * inv(f, n));
-    shrink(res, n);
-    return res;
-}
-
-// 多项式 exp(f), 要求 f[0] = 0
-Poly exp(const Poly &f, int n) {
-    Poly g(1, 1);
-    for (int m = 1; m < n; m <<= 1) {
-        Poly ln_g = ln(g, 2 * m);
-        Poly q = f;
-        shrink(q, 2 * m);
-        for (int i = 0; i < 2 * m; ++i) ln_g[i] = q[i] - ln_g[i];
-        ln_g[0] += 1;
-        g = g * ln_g;
-        shrink(g, 2 * m);
+    // Basic Operations (+, -, *)
+    Poly& operator+=(const Poly& other) {
+        if (other.size() > size()) resize(other.size());
+        for (int i = 0; i < other.size(); i++) coefs[i] += other.coefs[i];
+        shrink_to_fit();
+        return *this;
     }
-    shrink(g, n);
-    return g;
+
+    Poly& operator-=(const Poly& other) {
+        if (other.size() > size()) resize(other.size());
+        for (int i = 0; i < other.size(); i++) coefs[i] -= other.coefs[i];
+        shrink_to_fit();
+        return *this;
+    }
+
+    Poly& operator*=(const Poly& other) {
+        int n = size(), m = other.size();
+        if (n == 0 || m == 0) {
+            coefs.clear();
+            return *this;
+        }
+        int N = 1;
+        while (N < n + m - 1) N <<= 1;
+        
+        std::vector<mint> fa = coefs;
+        fa.resize(N);
+        std::vector<mint> fb = other.coefs;
+        fb.resize(N);
+
+        NTT::transform(fa, false);
+        NTT::transform(fb, false);
+        for (int i = 0; i < N; i++) fa[i] *= fb[i];
+        NTT::transform(fa, true);
+        
+        coefs = fa;
+        resize(n + m - 1);
+        return *this;
+    }
+    
+    friend Poly operator+(Poly a, const Poly& b) { return a += b; }
+    friend Poly operator-(Poly a, const Poly& b) { return a -= b; }
+    friend Poly operator*(Poly a, const Poly& b) { return a *= b; }
+
+    // Slicing and Reversing
+    Poly slice(int n) const {
+        return Poly(std::vector<mint>(coefs.begin(), coefs.begin() + std::min(n, size())));
+    }
+
+    Poly reverse() const {
+        Poly res = *this;
+        std::reverse(res.coefs.begin(), res.coefs.end());
+        return res;
+    }
+
+    // --- Advanced Operations ---
+
+    /**
+     * @brief Poly Inverse: A(x) * B(x) = 1 (mod x^n)
+     * @time O(n log n)
+     */
+    Poly inv(int n) const {
+        assert(coefs[0] != mint(0));
+        Poly res = { ~coefs[0] };
+        int k = 1;
+        while (k < n) {
+            k <<= 1;
+            Poly term = this->slice(k) * res;
+            term.resize(k);
+            for(int i = 0; i < k; ++i) term[i] = -term[i];
+            term[0] += 2;
+            res *= term;
+            res.resize(k);
+        }
+        res.resize(n);
+        return res;
+    }
+
+    /**
+     * @brief Poly Division: A(x) = Q(x)B(x) + R(x)
+     * @time O(n log n)
+     */
+    std::pair<Poly, Poly> divmod(const Poly& other) const {
+        if (degree() < other.degree()) return {Poly(), *this};
+        int n = degree(), m = other.degree();
+        Poly A_rev = this->reverse();
+        Poly B_rev = other.reverse();
+        Poly Q_rev = (A_rev * B_rev.inv(n - m + 1)).slice(n - m + 1);
+        Poly Q = Q_rev.reverse();
+        Poly R = *this - Q * other;
+        R.shrink_to_fit();
+        return {Q, R};
+    }
+
+    friend Poly operator/(const Poly& a, const Poly& b) { return a.divmod(b).first; }
+    friend Poly operator%(const Poly& a, const Poly& b) { return a.divmod(b).second; }
+
+    /**
+     * @brief Poly Logarithm: ln(A(x))
+     * @time O(n log n)
+     */
+    Poly log(int n) const {
+        assert(coefs[0] == mint(1));
+        Poly res = (this->derivative() * this->inv(n)).slice(n - 1).integral();
+        res.resize(n);
+        return res;
+    }
+
+    /**
+     * @brief Poly Exponentiation: exp(A(x))
+     * @time O(n log n)
+     */
+    Poly exp(int n) const {
+        assert(coefs.empty() || coefs[0] == mint(0));
+        Poly res = {1};
+        int k = 1;
+        while (k < n) {
+            k <<= 1;
+            res.resize(k);
+            Poly log_res = res.log(k);
+            Poly term = this->slice(k);
+            for(int i = 0; i < k; ++i) term[i] -= log_res[i];
+            term[0] += 1;
+            res *= term;
+            res.resize(k);
+        }
+        res.resize(n);
+        return res;
+    }
+
+    void print() const {
+        if (coefs.empty()) {
+            std::cout << "0" << std::endl;
+            return;
+        }
+        for(const auto& c : coefs) std::cout << c.x << " ";
+        std::cout << std::endl;
+    }
+};
+/*
+#include "Poly.h" // 假设您将上面的代码保存为 Poly.h
+#include <iostream>
+int main() {
+    // A(x) = 1 + x + x^2
+    Polynomial A = {1, 1, 1};
+    // B(x) = 1 - x
+    Polynomial B = {1, mint(-1)};
+
+    // 加法
+    Polynomial C = A + B; // 2 + x^2
+    std::cout << "A(x) + B(x) = "; C.print();
+
+    // 乘法
+    Polynomial D = A * B; // (1+x+x^2)(1-x) = 1-x^3
+    std::cout << "A(x) * B(x) = "; D.print();
+
+    // 求逆 (mod x^5)
+    // B(x) = 1 - x. Its inverse is 1 + x + x^2 + x^3 + ...
+    Polynomial B_inv = B.inv(5);
+    std::cout << "B(x)^-1 mod x^5 = "; B_inv.print();
+
+    // 除法
+    // (1-x^3) / (1-x) = 1+x+x^2
+    auto [Q, R] = D.divmod(B);
+    std::cout << "D(x) / B(x) = "; Q.print();
+    std::cout << "Remainder   = "; R.print();
+
+    // --- 求对数和指数 ---
+    // F(x) = 1 - x
+    Polynomial F = {1, mint(-1)};
+    // G(x) = ln(F(x)) = ln(1-x) = -x - x^2/2 - x^3/3 - ...
+    std::cout << "ln(1-x) mod x^5 = ";
+    F.log(5).print();
+
+    // H(x) = x + x^2/2 + x^3/3
+    Polynomial H = {0, 1, ~mint(2), ~mint(3)};
+    // exp(H(x)) = 1 / (1-x) = 1 + x + x^2 + ...
+    std::cout << "exp(H(x)) mod x^5 = ";
+    H.exp(5).print();
+
+    return 0;
 }
+*/

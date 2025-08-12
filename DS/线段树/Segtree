@@ -88,8 +88,8 @@ struct SegmentTree {
 
 
 struct SegmentTree{
-    #define lc(x) ((x)<<1)
-    #define rc(x) ((x)<<1|1)
+    #define lc(x) ((x) << 1)
+    #define rc(x) ((x) <<1 | 1)
     struct Node{
         int l,r;
         int val,tag;
@@ -109,7 +109,7 @@ struct SegmentTree{
         tr[u].val = tr[lc(u)].val + tr[rc(u)].val;
     }
     void pushdown(Node &rt,int tag){
-        rt.val += (rt.r-rt.l+1)*tag;
+        rt.val += (rt.r - rt.l + 1) * tag;
         rt.tag += tag;
     }
     void pushdown(int u){
@@ -123,7 +123,7 @@ struct SegmentTree{
         if(l == r){
             tr[u].val = a[l];
         }else{
-            int mid = (l+r)>>1;
+            int mid = (l + r) >> 1;
             build(lc(u),l,mid,a);
             build(rc(u),mid+1,r,a);
             pushup(u);
@@ -134,7 +134,7 @@ struct SegmentTree{
             pushdown(tr[u],d);
         }else{
             pushdown(u);
-            int mid = (tr[u].l+tr[u].r)>>1;
+            int mid = (tr[u].l + tr[u].r) >> 1;
             if(l <= mid) modify(lc(u),l,r,d);
             if(r > mid) modify(rc(u),l,r,d);
             pushup(u);
@@ -145,7 +145,7 @@ struct SegmentTree{
             return tr[u];
         }else{
             pushdown(u);
-            int mid = (tr[u].l+tr[u].r)>>1;
+            int mid = (tr[u].l+tr[u].r) >> 1;
             if(l > mid) return query(rc(u),l,r);
             else if(r <= mid) return query(lc(u),l,r);
             return pushup(query(lc(u),l,r),query(rc(u),l,r));
