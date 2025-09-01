@@ -1,3 +1,13 @@
+struct edge{
+    int v,w,c,next;
+};
+edge e[maxn];
+void add_edge(int u,int v,int w,int c){
+    e[len] = {v,w,c,head[u]};
+    head[u] = len++;
+    e[len] = {u,0,-c,head[v]};
+    head[v] = len++;
+}
 bool spfa(){
     queue<int> q;
     q.push(S);
