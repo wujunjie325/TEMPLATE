@@ -98,19 +98,20 @@ struct SegmentTree{
     void init(int n){
         tr.clear();
         tr.shrink_to_fit();
-        tr.resize(4*n+10);
+        tr.resize(4 * n + 10);
     }
-    Node pushup(Node a,Node b){
+    Node pushup(Node a,Node b){ // val -> val
         Node res = {0};
+        res.l = a.l,res.r = b.r;
         res.val = a.val + b.val;
         return res;
     }
     void pushup(int u){
-        tr[u].val = tr[lc(u)].val + tr[rc(u)].val;
+        tr[u] = pushup(tr[lc(u)],tr[rc(u)]);
     }
-    void pushdown(Node &rt,int tag){
+    void pushdown(Node &rt,int tag){ // tag -> val
         rt.val += (rt.r - rt.l + 1) * tag;
-        rt.tag += tag;
+        rt.tag += tag; // tag -> tag
     }
     void pushdown(int u){
         if(!tr[u].tag) return ;

@@ -22,7 +22,30 @@ void dfs(int u,int fa,int limit){//上下界优化复杂度为 O(N + M * V) 其�
         f[u][i] = max(f[u][i], f[u][i - 1]);
     }
 }
-
+void dfs(int u, int limit){ //上下界优化写法 2
+    if (limit < 0)
+        return ;
+    f[u][w[u]] = val[u];
+    sz[u] = w[u];
+    for (int v : e[u]) {
+        dfs(v, limit - w[u]);
+        for (int j = sz[u]; j >= w[u]; j--) {
+            for (int k = 0; k <= min(sz[v], m - j); k++) {
+                if (j + k > limit)
+                    break;
+                tmp[j + k] = max(tmp[j + k], f[u][j] + f[v][k]);
+            }
+        }
+        sz[u] += sz[v];
+        for (int i = 0; i <= min(sz[u], limit); i++) {
+            f[u][i] = tmp[i];
+            tmp[i] = 0;
+        }
+    }
+    for (int i = 1; i <= limit; i++) {
+        f[u][i] = max(f[u][i], f[u][i - 1]);
+    }
+}
 
 void dfs(int u){ //dfs序优化 复杂度为 O(N * M) 
     sz[u] = 1;
