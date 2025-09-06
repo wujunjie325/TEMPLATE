@@ -1,0 +1,46 @@
+void dfs(int u,int fa,int limit){//上下界优化复杂度为 O(N + M * V) 其中V为所有物品的权值和
+    if(limit < 0)
+        return ;
+    f[u][w[u]] = val[u];
+    sz[u] = w[u];
+    for(int v : e[u]){
+        if(v == fa)
+            continue;
+        dfs(v,u,limit - w[u]);
+		for(int j = sz[u];j >= w[u];j--){
+			for(int k = 0;k <= min(sz[v],limit - j);k++){
+				tmp[j + k] = max(tmp[j + k],f[u][j] + f[v][k]);
+			}
+		}
+        sz[u] += sz[v];
+		for(int i = 0;i <= min(sz[u],limit);i++){
+			f[u][i] = tmp[i];
+            tmp[i] = 0;
+		}
+    }
+    for(int i = 1;i <= limit;i++){
+        f[u][i] = max(f[u][i], f[u][i - 1]);
+    }
+}
+
+
+void dfs(int u){ //dfs序优化 复杂度为 O(N * M) 
+    sz[u] = 1;
+    for(int v : e[u]){
+        dfs(v);
+        sz[u] += sz[v];
+    }
+    dfn[u] = ++timestamp;//后序遍历
+    rnk[timestamp] = u;
+}
+dfs(T);
+for(int i = 1;i <= n;i++){ //利用后序遍历的连续性
+    int u = rnk[i];//后序树中 i 对应原树中的 u
+    for(int j  = 0;j <= m;j++){
+        f[i][j] = f[i - sz[u]][j];//不选当前的 u 则u所有的子树都无法选择
+        if(j >= w[u]){
+            f[i][j] = max(f[i][j],f[i - 1][j - w[u]] + val[u]);
+        }
+    }
+}
+//ans = f[n][m]
