@@ -1,0 +1,10 @@
+
+//枚举超集 n 为全集大小
+for(int s = p;s < (1ll << n);s = (s + 1) | p){
+
+}
+//子集枚举
+for(int s = q;;s = (s - 1) & q){
+    if(s == 0)
+        break;
+}
