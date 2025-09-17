@@ -7,7 +7,7 @@ template <int mod>
 struct Modint{
     unsigned int x;
     Modint() : x(0) {}
-    Modint(long long val) : x((val % mod + mod) % mod) {}
+    Modint(long long val) : x((val % mod + mod) % mod) {}//卡常时 x(val) 即可
 
     static constexpr int get_mod() { return mod; }
 
@@ -245,11 +245,11 @@ struct Poly {
 
     void print() const {
         if (coefs.empty()) {
-            std::cout << "0" << std::endl;
+            std::cout << "0" << "\n";
             return;
         }
         for(const auto& c : coefs) std::cout << c.x << " ";
-        std::cout << std::endl;
+        std::cout << "\n";
     }
 };
 /*

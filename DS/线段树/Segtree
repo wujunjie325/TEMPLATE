@@ -146,7 +146,7 @@ struct SegmentTree{
             return tr[u];
         }else{
             pushdown(u);
-            int mid = (tr[u].l+tr[u].r) >> 1;
+            int mid = (tr[u].l + tr[u].r) >> 1;
             if(l > mid) return query(rc(u),l,r);
             else if(r <= mid) return query(lc(u),l,r);
             return pushup(query(lc(u),l,r),query(rc(u),l,r));
