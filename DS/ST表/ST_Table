@@ -1,0 +1,26 @@
+struct ST_table{
+    int st[maxn][22];
+    int lg[maxn];
+    template <typename T>
+    T op(T a,T b){
+        return max(a,b);
+    }
+    void init(int n,int a[]){
+        for(int i = 1;i <= n;i++){
+            st[i][0] = a[i];
+        }
+        for(int j = 1;j <= 21;j++){
+            for(int i = 1;i + (1 << j) - 1 <= n;i++){
+                st[i][j] = op(st[i][j-1],st[i + (1 << (j - 1))][j - 1]);
+            }
+        }
+        for(int i = 2;i <= n;i++){
+            lg[i] = lg[i / 2] + 1;
+        }
+        return;
+    }
+    int query(int l,int r){
+        int s = lg[r - l + 1];
+        return op(st[l][s],st[r - (1 << s) + 1][s]);
+    }
+};

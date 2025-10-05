@@ -1,0 +1,13 @@
+double teranry_search{//函数为求最小值 求最大值则改为注释内容即可
+    int cnt = 70;
+    while(cnt--){
+        double lmid = l + ((r - l) / 2);
+        double rmid = lmid + ((r - lmid) / 2);
+        if(f(lmid) > f(rmid)){
+            l = lmid;  // r = rmid
+        }else{
+            r = rmid;  // l = lmid
+        }
+    }
+    return (l + r) / 2;
+}

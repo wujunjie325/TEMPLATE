@@ -23,7 +23,7 @@ struct xor_base{
         ll res = 0;
         for(int i = up;i >= 0;i--){
             if((res ^ base[i]) > res){
-                res = res^base[i];
+                res = res ^ base[i];
             }
         }
         return res;
