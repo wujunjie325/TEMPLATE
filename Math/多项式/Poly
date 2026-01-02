@@ -168,12 +168,6 @@ struct Poly {
         return res;
     }
 
-    // --- Advanced Operations ---
-
-    /**
-     * @brief Poly Inverse: A(x) * B(x) = 1 (mod x^n)
-     * @time O(n log n)
-     */
     Poly inv(int n) const {
         assert(coefs[0] != mint(0));
         Poly res = { ~coefs[0] };
@@ -191,10 +185,6 @@ struct Poly {
         return res;
     }
 
-    /**
-     * @brief Poly Division: A(x) = Q(x)B(x) + R(x)
-     * @time O(n log n)
-     */
     std::pair<Poly, Poly> divmod(const Poly& other) const {
         if (degree() < other.degree()) return {Poly(), *this};
         int n = degree(), m = other.degree();
@@ -210,10 +200,6 @@ struct Poly {
     friend Poly operator/(const Poly& a, const Poly& b) { return a.divmod(b).first; }
     friend Poly operator%(const Poly& a, const Poly& b) { return a.divmod(b).second; }
 
-    /**
-     * @brief Poly Logarithm: ln(A(x))
-     * @time O(n log n)
-     */
     Poly log(int n) const {
         assert(coefs[0] == mint(1));
         Poly res = (this->derivative() * this->inv(n)).slice(n - 1).integral();
@@ -221,10 +207,6 @@ struct Poly {
         return res;
     }
 
-    /**
-     * @brief Poly Exponentiation: exp(A(x))
-     * @time O(n log n)
-     */
     Poly exp(int n) const {
         assert(coefs.empty() || coefs[0] == mint(0));
         Poly res = {1};

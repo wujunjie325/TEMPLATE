@@ -8,7 +8,7 @@ struct Bit{
         N = n;
         tr.clear();
         tr.shrink_to_fit();
-        tr.resize(n+10);
+        tr.resize(n + 10);
     }
     void modify(int x,int k){
         while(x <= N){
@@ -27,6 +27,6 @@ struct Bit{
     int query(int l,int r){
         if(l > r)
             return 0;
-        return query(r)-query(l-1);
+        return query(r)-query(l - 1);
     }
 };
