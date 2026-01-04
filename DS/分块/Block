@@ -1,0 +1,71 @@
+struct Blo{
+    struct Block{
+        int l,r;
+        int val,tag;
+    };
+    int len,N;
+    vector<Block> info;
+    vector<int> bel;
+    void init(int n,int x){
+        len = x;
+        N = n;
+        bel.resize(n + 1);
+        info.push_back({});
+        for(int l = 1,r = 0,cnt = 1;r < N;l = r + 1,cnt++){
+            r = l + len - 1;
+            if(r > n)
+                r = n;
+            int sum = 0;
+            for(int i = l;i <= r;i++){
+                sum += a[i];
+                bel[i] = cnt;
+            }
+            info.push_back({l,r,sum,0});
+        }
+    }
+    int query(int l,int r){
+        int res = 0;
+        int x = bel[l],y = bel[r];
+        if(x == y){
+            for(int i = l;i <= r;i++){
+                res += a[i];
+                res += info[x].tag;
+            }
+            return res;
+        }
+        for(int i = l;i <= info[x].r;i++){//散块
+            res += a[i];
+            res += info[x].tag;
+        }
+        for(int i = x + 1;i < y;i++){//块间
+            res += info[i].val;
+            res += (info[i].r - info[i].l + 1) * info[i].tag;
+        }
+        for(int i = info[y].l;i <= r;i++){//散块
+            res += a[i];
+            res += info[y].tag;
+        }
+        return res;
+    }
+    void modify(int l,int r,int c){
+        int x = bel[l],y = bel[r];
+        if(x == y){
+            for(int i = l;i <= r;i++){
+                a[i] += c;
+                info[x].val += c;
+            }
+            return ;
+        }
+        for(int i = l;i <= info[x].r;i++){//散块
+            a[i] += c;
+            info[x].val += c;
+        }
+        for(int i = x + 1;i < y;i++){//块间
+            info[i].tag += c;
+        }
+        for(int i = info[y].l;i <= r;i++){//散块
+            a[i] += c;
+            info[y].val += c;
+        }
+    }
+};
